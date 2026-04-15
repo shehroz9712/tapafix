@@ -1,15 +1,19 @@
-fastapi==0.115.0
-uvicorn[standard]==0.32.0
-sqlalchemy==2.0.36
-PyMySQL==1.1.1
-alembic==1.16.1
-pydantic==2.9.2
-pydantic-settings==2.5.2
+# Async MySQL (SQLAlchemy async URL: mysql+aiomysql://...)
+# For Alembic sync migrations, env.py maps mysql+aiomysql -> mysql+pymysql.
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+sqlalchemy[asyncio]==2.0.36
+aiomysql==0.2.0
+pymysql==1.1.1
+alembic==1.14.0
+pydantic==2.10.3
+pydantic-settings==2.6.1
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.9
+python-multipart==0.0.20
 python-dotenv==1.0.1
 email-validator==2.2.0
-slowapi==0.1.9
-python-multipart==0.0.9
-
+google-auth==2.37.0
+httpx==0.28.1
+PyJWT==2.10.1
+requests==2.32.3

@@ -1,0 +1,1 @@
+"""Tapafix FastAPI application package."""
