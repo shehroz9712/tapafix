@@ -5,6 +5,7 @@ from app.api.v1.deps.auth import (
     get_current_user,
     require_admin,
     require_provider,
+    require_role,
     require_user,
 )
 from app.api.v1.deps.db import get_db
@@ -18,4 +19,5 @@ __all__ = [
     "require_admin",
     "require_user",
     "require_provider",
+    "require_role",
 ]

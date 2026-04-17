@@ -140,6 +140,18 @@ class UserRepository(BaseRepository[User]):
         await self.session.refresh(user)
         return user
 
+    async def assign_account_role(
+        self, user_id: int, *, login_as: str, role_id: int | None
+    ) -> User | None:
+        user = await self.get_by_id(user_id)
+        if not user:
+            return None
+        user.login_as = login_as
+        user.role_id = role_id
+        await self.session.flush()
+        await self.session.refresh(user)
+        return user
+
     async def list_all_with_role(
         self, *, skip: int = 0, limit: int = 100
     ) -> list[User]:

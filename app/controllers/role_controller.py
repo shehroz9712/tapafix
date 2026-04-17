@@ -1,7 +1,7 @@
 from fastapi.responses import JSONResponse
 
 from app.controllers.base_controller import BaseController
-from app.schemas.rbac import RoleAssignPermissions, RoleCreate
+from app.schemas.rbac import RoleAssignPermissions, RoleAssignUser, RoleCreate
 from app.services.role_service import RoleService
 
 
@@ -36,3 +36,13 @@ class RoleController(BaseController):
         )
         data = self._service.serialize_role_detail(role)
         return self.respond_success(data, "Role permissions updated")
+
+    async def assign_user_role(
+        self, user_id: int, payload: RoleAssignUser
+    ) -> JSONResponse:
+        await self._service.assign_account_role(
+            user_id=user_id,
+            account_role=payload.account_role,
+            role_id=payload.role_id,
+        )
+        return self.respond_success(None, "User role updated")

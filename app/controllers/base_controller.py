@@ -20,11 +20,9 @@ class BaseController:
         status_code: int = 200,
     ) -> JSONResponse:
         body = BaseResponse(
-            statusCode=status_code,
+            success=True,
             message=message,
-            status=True,
-            response={"data": data},
-            errors=[],
+            data=data,
         )
         return JSONResponse(
             status_code=status_code,
@@ -78,11 +76,9 @@ class BaseController:
         message: str, status_code: int, errors: list[Any] | None
     ) -> JSONResponse:
         body = BaseResponse(
-            statusCode=status_code,
+            success=False,
             message=message,
-            status=False,
-            response={"data": None},
-            errors=errors or [],
+            data=None,
         )
         return JSONResponse(
             status_code=status_code,

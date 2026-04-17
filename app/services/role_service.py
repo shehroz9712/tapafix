@@ -2,6 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import BadRequestError, NotFoundError
+from app.models import login_as as login_as_const
 from app.models.permission import Permission
 from app.models.role import Role
 from app.repositories.permission_repository import PermissionRepository
@@ -69,6 +70,32 @@ class RoleService:
         if role.name != "ADMIN":
             raise BadRequestError("Only the ADMIN role can be assigned to users")
         user = await self.users.promote_to_admin(user_id, role_id)
+        if not user:
+            raise NotFoundError("User not found")
+        await self.session.commit()
+
+    async def assign_account_role(
+        self, *, user_id: int, account_role: str, role_id: int | None
+    ) -> None:
+        login_as = account_role.strip().lower()
+        if login_as not in login_as_const.ALL:
+            raise BadRequestError("Invalid account role")
+
+        target_role_id = role_id
+        if login_as == login_as_const.ADMIN:
+            if target_role_id is None:
+                raise BadRequestError("role_id is required for admin accounts")
+            role = await self.roles.get_by_id(target_role_id)
+            if not role:
+                raise BadRequestError("Invalid role")
+        else:
+            target_role_id = None
+
+        user = await self.users.assign_account_role(
+            user_id,
+            login_as=login_as,
+            role_id=target_role_id,
+        )
         if not user:
             raise NotFoundError("User not found")
         await self.session.commit()

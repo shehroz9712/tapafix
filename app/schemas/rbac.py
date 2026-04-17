@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.auth import LoginAsOption
+
 
 class RoleCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=64)
@@ -9,6 +11,17 @@ class RoleCreate(BaseModel):
 
 class RoleAssignPermissions(BaseModel):
     permission_ids: list[int] = Field(default_factory=list)
+
+
+class RoleAssignUser(BaseModel):
+    role_id: int | None = Field(
+        default=None,
+        description="RBAC role id; required when account_role is admin.",
+    )
+    account_role: LoginAsOption = Field(
+        ...,
+        description="Account surface role for route scoping: user/provider/admin.",
+    )
 
 
 class RoleSummary(BaseModel):

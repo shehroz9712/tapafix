@@ -62,10 +62,11 @@ def create_access_token(
         "sub": sid,
         "user_id": sid,
         "login_as": login_as,
+        "role": login_as,
         "type": "access",
     }
     if login_as == login_as_const.ADMIN:
-        payload["role"] = role_name or ""
+        payload["rbac_role"] = role_name or ""
         payload["permissions"] = list(permissions or [])
     return _encode(payload)
 

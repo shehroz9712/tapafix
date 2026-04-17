@@ -1,23 +1,14 @@
 from fastapi import APIRouter
 
-from app.api.v1.routes import (
-    admin,
-    auth,
-    categories,
-    future,
-    role_routes,
-    subcategories,
-    users,
-    vendor,
-)
+from app.api.v1.admin.routes import router as admin_router
+from app.api.v1.provider.routes import router as provider_router
+from app.api.v1.routes import auth, future
+from app.api.v1.user.routes import router as user_router
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
-api_router.include_router(users.router, prefix="/users", tags=["users"])
-api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
-api_router.include_router(role_routes.router, prefix="/admin", tags=["admin-rbac"])
-api_router.include_router(vendor.router, prefix="/vendor", tags=["vendor"])
-api_router.include_router(categories.router, tags=["categories"])
-api_router.include_router(subcategories.router, tags=["subcategories"])
+api_router.include_router(user_router, prefix="/user", tags=["user"])
+api_router.include_router(provider_router, prefix="/provider", tags=["provider"])
+api_router.include_router(admin_router, prefix="/admin", tags=["admin"])
 api_router.include_router(future.router)

@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Annotated
 
@@ -81,30 +82,32 @@ def RequirePermission(permission_name: str):
 
 
 def require_admin():
-    async def _check(
-        ctx: Annotated[AuthContext, Depends(get_auth_context)],
-    ) -> None:
-        if ctx.user.login_as != login_as_const.ADMIN:
-            raise ForbiddenError("Administrator access required")
-
-    return Depends(_check)
+    return require_role(login_as_const.ADMIN, "Administrator access required")
 
 
 def require_user():
-    async def _check(
-        ctx: Annotated[AuthContext, Depends(get_auth_context)],
-    ) -> None:
-        if ctx.user.login_as != login_as_const.USER:
-            raise ForbiddenError("Customer access required")
-
-    return Depends(_check)
+    return require_role(login_as_const.USER, "Customer access required")
 
 
 def require_provider():
+    return require_role(login_as_const.PROVIDER, "Provider access required")
+
+
+def require_role(expected_role: str | Iterable[str], message: str | None = None):
     async def _check(
         ctx: Annotated[AuthContext, Depends(get_auth_context)],
     ) -> None:
-        if ctx.user.login_as != login_as_const.PROVIDER:
-            raise ForbiddenError("Provider access required")
+        if isinstance(expected_role, str):
+            allowed_roles = {expected_role.strip().lower()}
+        else:
+            allowed_roles = {str(role).strip().lower() for role in expected_role}
+        if not allowed_roles:
+            raise ForbiddenError("Permission denied")
+        token_role = (ctx.token_role or "").strip().lower()
+        user_role = (ctx.user.login_as or "").strip().lower()
+        if token_role and token_role != user_role:
+            raise UnauthorizedError("Invalid token role")
+        if user_role not in allowed_roles:
+            raise ForbiddenError(message or "Permission denied")
 
     return Depends(_check)
