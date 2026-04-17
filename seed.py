@@ -82,7 +82,6 @@ async def seed_users(session, admin_role: Role) -> None:
                 avatar_url=None,
                 login_as=item["login_as"],
                 role_id=role_id,
-                is_active=True,
                 is_verified=True,
             )
         )

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     DATABASE_URL: str
+    DB_USE_NULL_POOL: bool = True
     DB_POOL_RECYCLE_SECONDS: int = 300
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10

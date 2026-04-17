@@ -5,18 +5,28 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    # Avoid aiomysql pre-ping RuntimeError on stale closed transports.
-    pool_pre_ping=False,
-    pool_recycle=settings.DB_POOL_RECYCLE_SECONDS,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-)
+engine_kwargs = {
+    "echo": settings.DEBUG,
+}
+
+if settings.DB_USE_NULL_POOL:
+    # Prevent stale aiomysql TCP transport reuse in long-running uvloop workers.
+    engine_kwargs["poolclass"] = NullPool
+else:
+    engine_kwargs.update(
+        {
+            "pool_pre_ping": True,
+            "pool_recycle": settings.DB_POOL_RECYCLE_SECONDS,
+            "pool_size": settings.DB_POOL_SIZE,
+            "max_overflow": settings.DB_MAX_OVERFLOW,
+        }
+    )
+
+engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
     engine,
