@@ -11,7 +11,11 @@ from app.core.config import settings
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
-    pool_pre_ping=True,
+    # Avoid aiomysql pre-ping RuntimeError on stale closed transports.
+    pool_pre_ping=False,
+    pool_recycle=settings.DB_POOL_RECYCLE_SECONDS,
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
 )
 
 AsyncSessionLocal = async_sessionmaker(
