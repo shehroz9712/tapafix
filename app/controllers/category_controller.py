@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi.responses import JSONResponse
 
 from app.controllers.base_controller import BaseController

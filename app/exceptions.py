@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class AppException(Exception):
     """Domain / application error with HTTP mapping hints."""
 

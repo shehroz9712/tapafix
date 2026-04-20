@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import smtplib
 from email.message import EmailMessage
