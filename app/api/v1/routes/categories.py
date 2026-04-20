@@ -1,5 +1,4 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
@@ -45,7 +44,7 @@ async def list_categories(
 
 @router.get("/categories/{category_id}")
 async def get_category(
-    category_id: UUID,
+    category_id: int,
     controller: Annotated[CategoryController, Depends(get_category_controller)],
     include_subcategories: bool = Query(True),
 ):
@@ -54,7 +53,7 @@ async def get_category(
 
 @router.put("/categories/{category_id}")
 async def update_category(
-    category_id: UUID,
+    category_id: int,
     payload: CategoryUpdate,
     controller: Annotated[CategoryController, Depends(get_category_controller)],
 ):
@@ -63,7 +62,7 @@ async def update_category(
 
 @router.delete("/categories/{category_id}")
 async def delete_category(
-    category_id: UUID,
+    category_id: int,
     controller: Annotated[CategoryController, Depends(get_category_controller)],
 ):
     return await controller.delete(category_id)
@@ -71,7 +70,7 @@ async def delete_category(
 
 @router.get("/categories/{category_id}/subcategories")
 async def get_subcategories_by_category(
-    category_id: UUID,
+    category_id: int,
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],
     limit: int = Query(20, ge=1, le=200),
     offset: int = Query(0, ge=0),

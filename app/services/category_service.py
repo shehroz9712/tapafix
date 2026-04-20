@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,7 +28,7 @@ class CategoryService:
             await self.session.rollback()
             raise ConflictError("Category name already exists")
 
-    async def get_by_id(self, category_id: UUID, *, include_subcategories: bool = True) -> Category:
+    async def get_by_id(self, category_id: int, *, include_subcategories: bool = True) -> Category:
         category = await self.categories.get_by_id(
             category_id,
             include_subcategories=include_subcategories,
@@ -56,7 +54,7 @@ class CategoryService:
             include_subcategories=include_subcategories,
         )
 
-    async def update(self, category_id: UUID, payload: CategoryUpdate) -> Category:
+    async def update(self, category_id: int, payload: CategoryUpdate) -> Category:
         category = await self.get_by_id(category_id, include_subcategories=False)
         data = payload.model_dump(exclude_unset=True)
         if "name" in data:
@@ -71,7 +69,7 @@ class CategoryService:
             await self.session.rollback()
             raise ConflictError("Category name already exists")
 
-    async def delete(self, category_id: UUID) -> None:
+    async def delete(self, category_id: int) -> None:
         category = await self.get_by_id(category_id, include_subcategories=False)
         await self.categories.delete(category)
         await self.session.commit()

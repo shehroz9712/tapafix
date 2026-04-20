@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Literal
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,14 +8,14 @@ SortOrder = Literal["asc", "desc"]
 
 
 class SubCategoryCreate(BaseModel):
-    category_id: UUID
+    category_id: int
     name: str = Field(..., min_length=1, max_length=120)
     description: str | None = Field(None, max_length=500)
     is_active: bool = True
 
 
 class SubCategoryUpdate(BaseModel):
-    category_id: UUID | None = None
+    category_id: int | None = None
     name: str | None = Field(None, min_length=1, max_length=120)
     description: str | None = Field(None, max_length=500)
     is_active: bool | None = None
@@ -25,8 +24,8 @@ class SubCategoryUpdate(BaseModel):
 class SubCategoryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
-    category_id: UUID
+    id: int
+    category_id: int
     name: str
     description: str | None
     is_active: bool
@@ -49,7 +48,7 @@ class CategoryUpdate(BaseModel):
 class CategoryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
+    id: int
     name: str
     description: str | None
     is_active: bool

@@ -1,7 +1,6 @@
-import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, ForeignKey, Index, String, Text, Uuid
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -16,11 +15,9 @@ class SubCategory(Base, TimestampMixin):
         Index("uq_subcategories_category_name", "category_id", "name", unique=True),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    category_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True),
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    category_id: Mapped[int] = mapped_column(
+        Integer,
         ForeignKey("categories.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

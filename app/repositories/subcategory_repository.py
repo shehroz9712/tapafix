@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +12,7 @@ class SubCategoryRepository(BaseRepository[SubCategory]):
     async def create(
         self,
         *,
-        category_id: UUID,
+        category_id: int,
         name: str,
         description: str | None,
         is_active: bool,
@@ -28,14 +26,14 @@ class SubCategoryRepository(BaseRepository[SubCategory]):
             }
         )
 
-    async def get_by_id(self, subcategory_id: UUID) -> SubCategory | None:
+    async def get_by_id(self, subcategory_id: int) -> SubCategory | None:
         stmt = select(SubCategory).where(SubCategory.id == subcategory_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_by_category_id(
         self,
-        category_id: UUID,
+        category_id: int,
         *,
         limit: int,
         offset: int,
@@ -72,7 +70,7 @@ class SubCategoryRepository(BaseRepository[SubCategory]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_category_and_name(self, category_id: UUID, name: str) -> SubCategory | None:
+    async def get_by_category_and_name(self, category_id: int, name: str) -> SubCategory | None:
         stmt = select(SubCategory).where(
             SubCategory.category_id == category_id,
             func.lower(SubCategory.name) == name.strip().lower(),

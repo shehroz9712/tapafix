@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,7 +38,7 @@ class SubCategoryService:
             await self.session.rollback()
             raise ConflictError("Subcategory name already exists in this category")
 
-    async def get_by_id(self, subcategory_id: UUID) -> SubCategory:
+    async def get_by_id(self, subcategory_id: int) -> SubCategory:
         subcategory = await self.subcategories.get_by_id(subcategory_id)
         if not subcategory:
             raise NotFoundError("Subcategory not found")
@@ -63,7 +61,7 @@ class SubCategoryService:
 
     async def get_by_category_id(
         self,
-        category_id: UUID,
+        category_id: int,
         *,
         limit: int,
         offset: int,
@@ -82,7 +80,7 @@ class SubCategoryService:
             sort_order=sort_order,
         )
 
-    async def update(self, subcategory_id: UUID, payload: SubCategoryUpdate) -> SubCategory:
+    async def update(self, subcategory_id: int, payload: SubCategoryUpdate) -> SubCategory:
         subcategory = await self.get_by_id(subcategory_id)
         data = payload.model_dump(exclude_unset=True)
 
@@ -108,7 +106,7 @@ class SubCategoryService:
             await self.session.rollback()
             raise ConflictError("Subcategory name already exists in this category")
 
-    async def delete(self, subcategory_id: UUID) -> None:
+    async def delete(self, subcategory_id: int) -> None:
         subcategory = await self.get_by_id(subcategory_id)
         await self.subcategories.delete(subcategory)
         await self.session.commit()

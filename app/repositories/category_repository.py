@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -21,7 +19,7 @@ class CategoryRepository(BaseRepository[Category]):
             }
         )
 
-    async def get_by_id(self, category_id: UUID, *, include_subcategories: bool = False) -> Category | None:
+    async def get_by_id(self, category_id: int, *, include_subcategories: bool = False) -> Category | None:
         stmt = select(Category).where(Category.id == category_id)
         if include_subcategories:
             stmt = stmt.options(selectinload(Category.subcategories))

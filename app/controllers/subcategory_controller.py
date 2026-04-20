@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi.responses import JSONResponse
 
 from app.controllers.base_controller import BaseController
@@ -32,13 +30,13 @@ class SubCategoryController(BaseController):
         data = [self._service.serialize(row) for row in rows]
         return self.respond_success(data, "Subcategories retrieved")
 
-    async def get_by_id(self, subcategory_id: UUID) -> JSONResponse:
+    async def get_by_id(self, subcategory_id: int) -> JSONResponse:
         row = await self._service.get_by_id(subcategory_id)
         return self.respond_success(self._service.serialize(row), "Subcategory retrieved")
 
     async def get_by_category(
         self,
-        category_id: UUID,
+        category_id: int,
         *,
         limit: int,
         offset: int,
@@ -55,10 +53,10 @@ class SubCategoryController(BaseController):
         data = [self._service.serialize(row) for row in rows]
         return self.respond_success(data, "Subcategories retrieved")
 
-    async def update(self, subcategory_id: UUID, payload: SubCategoryUpdate) -> JSONResponse:
+    async def update(self, subcategory_id: int, payload: SubCategoryUpdate) -> JSONResponse:
         row = await self._service.update(subcategory_id, payload)
         return self.respond_success(self._service.serialize(row), "Subcategory updated")
 
-    async def delete(self, subcategory_id: UUID) -> JSONResponse:
+    async def delete(self, subcategory_id: int) -> JSONResponse:
         await self._service.delete(subcategory_id)
         return self.respond_success(None, "Subcategory deleted")

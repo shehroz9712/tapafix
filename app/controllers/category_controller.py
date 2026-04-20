@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi.responses import JSONResponse
 
 from app.controllers.base_controller import BaseController
@@ -37,7 +35,7 @@ class CategoryController(BaseController):
         ]
         return self.respond_success(data, "Categories retrieved")
 
-    async def get_by_id(self, category_id: UUID, *, include_subcategories: bool) -> JSONResponse:
+    async def get_by_id(self, category_id: int, *, include_subcategories: bool) -> JSONResponse:
         category = await self._service.get_by_id(
             category_id,
             include_subcategories=include_subcategories,
@@ -47,10 +45,10 @@ class CategoryController(BaseController):
             "Category retrieved",
         )
 
-    async def update(self, category_id: UUID, payload: CategoryUpdate) -> JSONResponse:
+    async def update(self, category_id: int, payload: CategoryUpdate) -> JSONResponse:
         category = await self._service.update(category_id, payload)
         return self.respond_success(self._service.serialize(category), "Category updated")
 
-    async def delete(self, category_id: UUID) -> JSONResponse:
+    async def delete(self, category_id: int) -> JSONResponse:
         await self._service.delete(category_id)
         return self.respond_success(None, "Category deleted")

@@ -92,7 +92,7 @@ async def health():
     return BaseController.respond_success({"status": "ok"}, "Service healthy")
 
 
-@app.get("/")
+@app.get("/root")
 async def root():
     return BaseController.respond_success(
         {"service": settings.PROJECT_NAME, "api": settings.API_V1_PREFIX},
