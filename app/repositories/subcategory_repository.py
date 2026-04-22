@@ -33,6 +33,16 @@ class SubCategoryRepository(BaseRepository[SubCategory]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def list_active_by_ids(self, ids: list[int]) -> list[SubCategory]:
+        if not ids:
+            return []
+        stmt = select(SubCategory).where(
+            SubCategory.id.in_(ids),
+            SubCategory.is_active.is_(True),
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def get_by_category_id(
         self,
         category_id: int,

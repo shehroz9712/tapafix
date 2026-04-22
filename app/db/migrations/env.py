@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.db.base import Base
 from app.models.category import Category  # noqa: F401
 from app.models.password_reset_token import PasswordResetToken  # noqa: F401
+from app.models.provider_profile import ProviderProfile  # noqa: F401
 from app.models.permission import Permission  # noqa: F401
 from app.models.revoked_refresh_token import RevokedRefreshToken  # noqa: F401
 from app.models.role import Role  # noqa: F401

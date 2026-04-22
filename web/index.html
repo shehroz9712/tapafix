@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signup — validation &amp; OTP demo</title>
+    <link rel="stylesheet" href="/demo/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Create account</h1>
+      <p class="subtitle">Validation runs on blur; updates while you type after a field is touched. Use OTP <strong>123654</strong> to enable submit.</p>
+
+      <form id="signup-form" novalidate>
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input
+            id="fullName"
+            name="fullName"
+            type="text"
+            autocomplete="name"
+            data-field="fullName"
+            aria-describedby="err-fullName"
+            aria-invalid="false"
+          />
+          <p id="err-fullName" class="error-msg" data-error-for="fullName" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            data-field="email"
+            aria-describedby="err-email"
+            aria-invalid="false"
+          />
+          <p id="err-email" class="error-msg" data-error-for="email" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            autocomplete="tel"
+            inputmode="tel"
+            data-field="phone"
+            aria-describedby="err-phone"
+            aria-invalid="false"
+          />
+          <p id="err-phone" class="error-msg" data-error-for="phone" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            data-field="password"
+            aria-describedby="err-password pwd-hint"
+            aria-invalid="false"
+          />
+          <p id="pwd-hint" class="hint">At least 8 characters, with one letter and one number.</p>
+          <p id="err-password" class="error-msg" data-error-for="password" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirm password</label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+            data-field="confirmPassword"
+            aria-describedby="err-confirmPassword"
+            aria-invalid="false"
+          />
+          <p id="err-confirmPassword" class="error-msg" data-error-for="confirmPassword" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="otp">Verification code (OTP)</label>
+          <div class="otp-row">
+            <input
+              id="otp"
+              name="otp"
+              type="text"
+              inputmode="numeric"
+              pattern="\d{6}"
+              maxlength="6"
+              placeholder="6 digits"
+              data-field="otp"
+              aria-describedby="err-otp otp-feedback"
+              aria-invalid="false"
+            />
+            <button type="button" class="btn btn-secondary" id="verify-otp">Verify code</button>
+          </div>
+          <p id="err-otp" class="error-msg" data-error-for="otp" role="alert"></p>
+          <p id="otp-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" style="width: 100%">Submit</button>
+        </div>
+      </form>
+
+      <div id="form-result" class="banner" role="status" aria-live="polite"></div>
+    </main>
+
+    <script type="module">
+      import { initSignupForm } from "/demo/form.js";
+      const form = document.getElementById("signup-form");
+      if (form instanceof HTMLFormElement) {
+        initSignupForm(form, { touched: new Set(), otpVerified: false });
+      }
+    </script>
+  </body>
+</html>

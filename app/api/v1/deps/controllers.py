@@ -12,11 +12,13 @@ from app.controllers.category_controller import CategoryController
 from app.controllers.future_modules_controller import FutureModulesController
 from app.controllers.role_controller import RoleController
 from app.controllers.subcategory_controller import SubCategoryController
+from app.controllers.provider_profile_controller import ProviderProfileController
 from app.controllers.user_controller import UserController
 from app.controllers.vendor_controller import VendorController
 from app.services.auth_service import AuthService
 from app.services.category_service import CategoryService
 from app.services.future_modules_service import FutureModulesService
+from app.services.provider_profile_service import ProviderProfileService
 from app.services.role_service import RoleService
 from app.services.subcategory_service import SubCategoryService
 from app.services.user_service import UserService
@@ -97,6 +99,18 @@ def get_vendor_controller(
     service: Annotated[VendorService, Depends(get_vendor_service)],
 ) -> VendorController:
     return VendorController(service)
+
+
+def get_provider_profile_service(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> ProviderProfileService:
+    return ProviderProfileService(session)
+
+
+def get_provider_profile_controller(
+    service: Annotated[ProviderProfileService, Depends(get_provider_profile_service)],
+) -> ProviderProfileController:
+    return ProviderProfileController(service)
 
 
 def get_future_modules_service() -> FutureModulesService:

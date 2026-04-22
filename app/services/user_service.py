@@ -7,6 +7,7 @@ from app.models import login_as as login_as_const
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserAdminOut, UserCreate, UserPublic
+from app.services.provider_profile_service import ProviderProfileService
 
 
 class UserService:
@@ -28,6 +29,9 @@ class UserService:
                 login_as=la,
                 role_id=None,
             )
+            if la == login_as_const.PROVIDER:
+                profile_svc = ProviderProfileService(self.session)
+                await profile_svc.ensure_stub_for_provider_user(user)
             await self.session.commit()
             reloaded = await self.users.get_by_id(user.id)
             if not reloaded:

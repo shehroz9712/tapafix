@@ -33,6 +33,16 @@ class CategoryRepository(BaseRepository[Category]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def count_active_by_ids(self, ids: list[int]) -> int:
+        if not ids:
+            return 0
+        stmt = select(func.count()).select_from(Category).where(
+            Category.id.in_(ids),
+            Category.is_active.is_(True),
+        )
+        result = await self.session.execute(stmt)
+        return int(result.scalar_one())
+
     async def get_all(
         self,
         *,

@@ -1,11 +1,15 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1.router import api_router
 from app.controllers.base_controller import BaseController
 from app.core.config import settings
+from app.utils.validation_errors import format_request_validation_errors
 from app.exceptions import (
     AppException,
     BadRequestError,
@@ -45,8 +49,8 @@ async def http_exception_handler(_: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(_: Request, exc: RequestValidationError):
-    errors = exc.errors()
-    return BaseController.respond_validation_error("Validation error", errors)
+    structured = format_request_validation_errors(exc.errors())
+    return BaseController.respond_validation_error("Validation error", structured)
 
 
 @app.exception_handler(UnauthorizedError)
@@ -101,3 +105,11 @@ async def root():
 
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+_web_dir = Path(__file__).resolve().parent.parent / "web"
+if _web_dir.is_dir():
+    app.mount(
+        "/demo",
+        StaticFiles(directory=str(_web_dir), html=True),
+        name="demo",
+    )

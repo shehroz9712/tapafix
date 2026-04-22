@@ -1,5 +1,6 @@
 from app.models.category import Category
 from app.models.password_reset_token import PasswordResetToken
+from app.models.provider_profile import ProviderProfile
 from app.models.permission import Permission
 from app.models.revoked_refresh_token import RevokedRefreshToken
 from app.models.role import Role
@@ -16,4 +17,5 @@ __all__ = [
     "RevokedRefreshToken",
     "Category",
     "SubCategory",
+    "ProviderProfile",
 ]

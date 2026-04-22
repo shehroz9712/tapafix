@@ -8,15 +8,18 @@ from app.api.v1.deps.auth import RequirePermission, get_current_user, require_ad
 from app.api.v1.deps.controllers import (
     get_admin_controller,
     get_category_controller,
+    get_provider_profile_controller,
     get_role_controller,
     get_subcategory_controller,
 )
 from app.controllers.admin_controller import AdminController
 from app.controllers.category_controller import CategoryController
+from app.controllers.provider_profile_controller import ProviderProfileController
 from app.controllers.role_controller import RoleController
 from app.controllers.subcategory_controller import SubCategoryController
 from app.models.user import User
 from app.schemas.category import CategoryCreate, CategoryUpdate, SortOrder, SubCategoryCreate, SubCategoryUpdate
+from app.schemas.provider_profile import ProviderListingVerificationUpdate
 from app.schemas.rbac import RoleAssignPermissions, RoleAssignUser, RoleCreate
 
 router = APIRouter(dependencies=[require_admin()])
@@ -195,3 +198,17 @@ async def delete_subcategory(
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],
 ):
     return await controller.delete(subcategory_id)
+
+
+@router.patch(
+    "/providers/{user_id}/listing-verification",
+    dependencies=[RequirePermission("manage_users")],
+)
+async def admin_provider_listing_verification(
+    user_id: int,
+    payload: ProviderListingVerificationUpdate,
+    controller: Annotated[
+        ProviderProfileController, Depends(get_provider_profile_controller)
+    ],
+):
+    return await controller.admin_set_listing_verified(user_id, payload)
