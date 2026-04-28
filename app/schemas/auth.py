@@ -40,3 +40,8 @@ class LogoutRequest(BaseModel):
 class SocialLoginRequest(BaseModel):
     provider: Literal["google", "facebook", "apple"]
     token: str = Field(..., min_length=10, max_length=16000)
+
+
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=4, max_length=8)

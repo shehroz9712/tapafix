@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
 from app.models import login_as as login_as_const
 
 if TYPE_CHECKING:
+    from app.models.package_purchase import PackagePurchase
+    from app.models.transaction import Transaction
     from app.models.password_reset_token import PasswordResetToken
     from app.models.provider_profile import ProviderProfile
     from app.models.role import Role
@@ -41,6 +44,10 @@ class User(Base, TimestampMixin):
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    email_verification_otp: Mapped[Optional[str]] = mapped_column(String(6), nullable=True)
+    email_verification_otp_expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     assigned_role: Mapped[Optional["Role"]] = relationship(
         "Role", back_populates="users"
@@ -54,6 +61,16 @@ class User(Base, TimestampMixin):
         "ProviderProfile",
         back_populates="user",
         uselist=False,
+        cascade="all, delete-orphan",
+    )
+    package_purchases: Mapped[list["PackagePurchase"]] = relationship(
+        "PackagePurchase",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    transactions: Mapped[list["Transaction"]] = relationship(
+        "Transaction",
+        back_populates="user",
         cascade="all, delete-orphan",
     )
 

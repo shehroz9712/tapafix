@@ -36,6 +36,20 @@ def _reset_email_body(*, token: str) -> tuple[str, str]:
     return plain, html
 
 
+def _verification_otp_email_body(*, otp_code: str) -> tuple[str, str]:
+    plain = (
+        "Use this OTP to verify your email.\n\n"
+        f"OTP: {otp_code}\n\n"
+        f"This OTP expires in {settings.EMAIL_OTP_EXPIRE_MINUTES} minutes.\n"
+    )
+    html = (
+        "<p>Use this OTP to verify your email.</p>"
+        f"<p><strong>{otp_code}</strong></p>"
+        f"<p>This OTP expires in {settings.EMAIL_OTP_EXPIRE_MINUTES} minutes.</p>"
+    )
+    return plain, html
+
+
 async def _send_sendgrid(*, to_email: str, subject: str, plain: str, html: str) -> None:
     from_email = settings.EMAILS_FROM_EMAIL
     if not from_email:
@@ -163,3 +177,12 @@ async def send_password_reset_email(*, to_email: str, token: str) -> None:
             provider,
             to_email,
         )
+
+
+async def send_email_verification_otp(*, to_email: str, otp_code: str) -> None:
+    subject = "Verify your email"
+    plain, html = _verification_otp_email_body(otp_code=otp_code)
+    try:
+        await _send_sendgrid(to_email=to_email, subject=subject, plain=plain, html=html)
+    except Exception:
+        logger.exception("Failed to send verification OTP via SendGrid to %s", to_email)

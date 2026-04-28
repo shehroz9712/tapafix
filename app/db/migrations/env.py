@@ -10,6 +10,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from app.core.config import settings
 from app.db.base import Base
 from app.models.category import Category  # noqa: F401
+from app.models.package import Package  # noqa: F401
+from app.models.package_purchase import PackagePurchase  # noqa: F401
 from app.models.password_reset_token import PasswordResetToken  # noqa: F401
 from app.models.provider_profile import ProviderProfile  # noqa: F401
 from app.models.permission import Permission  # noqa: F401
@@ -17,6 +19,7 @@ from app.models.revoked_refresh_token import RevokedRefreshToken  # noqa: F401
 from app.models.role import Role  # noqa: F401
 from app.models.role_permission import RolePermission  # noqa: F401
 from app.models.subcategory import SubCategory  # noqa: F401
+from app.models.transaction import Transaction  # noqa: F401
 from app.models.user import User  # noqa: F401
 
 config = context.config

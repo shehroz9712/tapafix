@@ -11,6 +11,7 @@ from app.schemas.auth import (
     RefreshRequest,
     ResetPasswordRequest,
     SocialLoginRequest,
+    VerifyEmailRequest,
 )
 from app.schemas.user import UserCreate
 
@@ -71,3 +72,11 @@ async def social_login(
     controller: Annotated[AuthController, Depends(get_auth_controller)],
 ):
     return await controller.social_login(payload)
+
+
+@router.post("/verify-email")
+async def verify_email(
+    payload: VerifyEmailRequest,
+    controller: Annotated[AuthController, Depends(get_auth_controller)],
+):
+    return await controller.verify_email(payload)

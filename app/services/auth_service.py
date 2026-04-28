@@ -21,11 +21,17 @@ from app.models import login_as as login_as_const
 from app.models.user import User
 from app.repositories.token_repository import RefreshBlacklistRepository, TokenRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.auth import ForgotPasswordRequest, LoginRequest, ResetPasswordRequest, TokenPair
+from app.schemas.auth import (
+    ForgotPasswordRequest,
+    LoginRequest,
+    ResetPasswordRequest,
+    TokenPair,
+    VerifyEmailRequest,
+)
 from app.schemas.user import UserCreate
 from app.services.permission_service import PermissionService
 from app.services.social_auth_service import SocialAuthService
-from app.utils.email import send_password_reset_email
+from app.utils.email import send_email_verification_otp, send_password_reset_email
 
 
 class AuthService:
@@ -35,13 +41,12 @@ class AuthService:
         self.tokens = TokenRepository(session)
         self.blacklist = RefreshBlacklistRepository(session)
 
-    async def register(self, data: UserCreate) -> tuple[User, TokenPair]:
+    async def register(self, data: UserCreate) -> None:
         from app.services.user_service import UserService
 
         user_service = UserService(self.session)
         user = await user_service.register(data)
-        tokens = await self._issue_tokens(user)
-        return user, tokens
+        await self._send_verification_otp_for_user(user)
 
     async def login(self, data: LoginRequest) -> TokenPair:
         user = await self.users.get_by_email(str(data.email).lower())
@@ -49,9 +54,29 @@ class AuthService:
             raise UnauthorizedError("Invalid credentials")
         if not user.is_active:
             raise UnauthorizedError("Account is inactive")
+        if not user.is_verified:
+            await self._send_verification_otp_for_user(user)
+            raise BadRequestError("verify your email")
         if data.login_as.strip().lower() != user.login_as:
             raise UnauthorizedError("Invalid credentials")
         return await self._issue_tokens(user)
+
+    async def verify_email(self, data: VerifyEmailRequest) -> None:
+        user = await self.users.get_by_email(str(data.email).lower())
+        if not user:
+            raise BadRequestError("Invalid verification request")
+        now = datetime.now(timezone.utc)
+        if (
+            not user.email_verification_otp
+            or user.email_verification_otp != data.otp.strip()
+            or not user.email_verification_otp_expires_at
+            or user.email_verification_otp_expires_at < now
+        ):
+            raise BadRequestError("Invalid or expired OTP")
+        user.is_verified = True
+        user.email_verification_otp = None
+        user.email_verification_otp_expires_at = None
+        await self.session.commit()
 
     async def refresh(self, refresh_token: str) -> TokenPair:
         payload = parse_refresh_payload(refresh_token)
@@ -193,6 +218,15 @@ class AuthService:
             access = create_access_token(subject=user.id, login_as=user.login_as)
         refresh, _jti = create_refresh_token(subject=user.id)
         return TokenPair(access_token=access, refresh_token=refresh)
+
+    async def _send_verification_otp_for_user(self, user: User) -> None:
+        otp_code = f"{secrets.randbelow(1000000):06d}"
+        user.email_verification_otp = otp_code
+        user.email_verification_otp_expires_at = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.EMAIL_OTP_EXPIRE_MINUTES
+        )
+        await self.session.commit()
+        await send_email_verification_otp(to_email=user.email, otp_code=otp_code)
 
     def _jwt_exp(self, token: str) -> datetime | None:
         try:

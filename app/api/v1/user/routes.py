@@ -5,10 +5,12 @@ from fastapi import APIRouter, Depends, Query
 from app.api.v1.deps.auth import get_current_user, require_role
 from app.api.v1.deps.controllers import (
     get_category_controller,
+    get_package_controller,
     get_subcategory_controller,
     get_user_controller,
 )
 from app.controllers.category_controller import CategoryController
+from app.controllers.package_controller import PackageController
 from app.controllers.subcategory_controller import SubCategoryController
 from app.controllers.user_controller import UserController
 from app.models.user import User
@@ -59,7 +61,6 @@ async def list_subcategories(
     return await controller.get_all(
         limit=limit,
         offset=offset,
-        is_active=True,
         sort_order=sort,
     )
 
@@ -87,3 +88,64 @@ async def get_subcategories_by_category(
         is_active=True,
         sort_order=sort,
     )
+
+
+@router.get("/packages")
+async def list_packages(
+    controller: Annotated[PackageController, Depends(get_package_controller)],
+    limit: int = Query(20, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    sort: SortOrder = Query("desc"),
+):
+    return await controller.get_all(
+        limit=limit,
+        offset=offset,
+        sort_order=sort,
+    )
+
+
+@router.get("/packages/{package_id}")
+async def get_package(
+    package_id: int,
+    controller: Annotated[PackageController, Depends(get_package_controller)],
+):
+    return await controller.get_by_id(package_id)
+
+
+@router.post("/packages/{package_id}/buy")
+async def buy_package(
+    package_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    controller: Annotated[PackageController, Depends(get_package_controller)],
+):
+    return await controller.create_checkout(
+        current_user=current_user,
+        package_id=package_id,
+    )
+
+
+@router.get("/transactions")
+async def list_transactions(
+    current_user: Annotated[User, Depends(get_current_user)],
+    controller: Annotated[PackageController, Depends(get_package_controller)],
+    limit: int = Query(20, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    status: str | None = Query(None),
+    sort: SortOrder = Query("desc"),
+):
+    return await controller.get_all_transactions(
+        limit=limit,
+        offset=offset,
+        user_id=current_user.id,
+        status=status,
+        sort_order=sort,
+    )
+
+
+@router.get("/transactions/{transaction_id}")
+async def get_transaction(
+    transaction_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    controller: Annotated[PackageController, Depends(get_package_controller)],
+):
+    return await controller.get_user_transaction_by_id(transaction_id, current_user)

@@ -8,8 +8,9 @@ from app.schemas.auth import (
     RefreshRequest,
     ResetPasswordRequest,
     SocialLoginRequest,
+    VerifyEmailRequest,
 )
-from app.schemas.user import UserCreate, UserPublic
+from app.schemas.user import UserCreate
 from app.services.auth_service import AuthService
 
 
@@ -18,14 +19,8 @@ class AuthController(BaseController):
         self._service = service
 
     async def register(self, payload: UserCreate) -> JSONResponse:
-        user, tokens = await self._service.register(payload)
-        data = {
-            "user": UserPublic.model_validate(user).model_dump(),
-            "tokens": tokens.model_dump(),
-        }
-        return self.respond_success(
-            data, "User registered successfully"
-        )
+        await self._service.register(payload)
+        return self.respond_success(None, "OTP sent to your email")
 
     async def login(self, payload: LoginRequest) -> JSONResponse:
         tokens = await self._service.login(payload)
@@ -53,3 +48,7 @@ class AuthController(BaseController):
     async def social_login(self, payload: SocialLoginRequest) -> JSONResponse:
         tokens = await self._service.social_login(payload.provider, payload.token)
         return self.respond_success(tokens.model_dump(), "Social login successful")
+
+    async def verify_email(self, payload: VerifyEmailRequest) -> JSONResponse:
+        await self._service.verify_email(payload)
+        return self.respond_success(None, "Email verified successfully")

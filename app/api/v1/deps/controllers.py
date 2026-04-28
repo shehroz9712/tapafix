@@ -10,6 +10,7 @@ from app.controllers.admin_controller import AdminController
 from app.controllers.auth_controller import AuthController
 from app.controllers.category_controller import CategoryController
 from app.controllers.future_modules_controller import FutureModulesController
+from app.controllers.package_controller import PackageController
 from app.controllers.role_controller import RoleController
 from app.controllers.subcategory_controller import SubCategoryController
 from app.controllers.provider_profile_controller import ProviderProfileController
@@ -18,6 +19,7 @@ from app.controllers.vendor_controller import VendorController
 from app.services.auth_service import AuthService
 from app.services.category_service import CategoryService
 from app.services.future_modules_service import FutureModulesService
+from app.services.package_service import PackageService
 from app.services.provider_profile_service import ProviderProfileService
 from app.services.role_service import RoleService
 from app.services.subcategory_service import SubCategoryService
@@ -111,6 +113,18 @@ def get_provider_profile_controller(
     service: Annotated[ProviderProfileService, Depends(get_provider_profile_service)],
 ) -> ProviderProfileController:
     return ProviderProfileController(service)
+
+
+def get_package_service(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> PackageService:
+    return PackageService(session)
+
+
+def get_package_controller(
+    service: Annotated[PackageService, Depends(get_package_service)],
+) -> PackageController:
+    return PackageController(service)
 
 
 def get_future_modules_service() -> FutureModulesService:

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     RESET_TOKEN_EXPIRE_MINUTES: int = 60
+    EMAIL_OTP_EXPIRE_MINUTES: int = 10
 
     # Email provider mode: auto | sendgrid | smtp | mailtrap
     EMAIL_PROVIDER: str = "auto"
@@ -47,6 +48,11 @@ class Settings(BaseSettings):
     FACEBOOK_APP_ID: Optional[str] = None
     FACEBOOK_APP_SECRET: Optional[str] = None
     APPLE_CLIENT_ID: Optional[str] = None
+
+    STRIPE_SECRET_KEY: Optional[str] = None
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
+    STRIPE_SUCCESS_URL: str = "http://localhost:3000/payment/success"
+    STRIPE_CANCEL_URL: str = "http://localhost:3000/payment/cancel"
 
 
 settings = Settings()
