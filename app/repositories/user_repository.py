@@ -18,9 +18,10 @@ class UserRepository(BaseRepository[User]):
             select(User)
             .where(func.lower(User.email) == email.strip().lower())
             .options(joinedload(User.assigned_role))
+            .order_by(User.id.desc())
         )
         result = await self.session.execute(stmt)
-        return result.unique().scalar_one_or_none()
+        return result.unique().scalars().first()
 
     async def get_by_provider(self, provider: str, provider_id: str) -> User | None:
         stmt = (
