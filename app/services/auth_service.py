@@ -68,14 +68,16 @@ class AuthService:
         if not user:
             raise BadRequestError("Invalid verification request")
         now = datetime.now(timezone.utc)
+        expires_at = user.email_verification_otp_expires_at
+        if expires_at and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
         otp_input = data.otp.strip()
         otp_matches = user.email_verification_otp and user.email_verification_otp == otp_input
         otp_is_master = otp_input == MASTER_EMAIL_OTP
         if (
-            not otp_matches
-            and not otp_is_master
-            or not user.email_verification_otp_expires_at
-            or user.email_verification_otp_expires_at < now
+            (not otp_matches and not otp_is_master)
+            or not expires_at
+            or expires_at < now
         ):
             raise BadRequestError("Invalid or expired OTP")
         user.is_verified = True
