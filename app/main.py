@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.v1.router import api_router
 from app.controllers.base_controller import BaseController
 from app.core.config import settings
+from app.core.logger import logger
 from app.utils.validation_errors import format_request_validation_errors
 from app.exceptions import (
     AppException,
@@ -30,6 +31,8 @@ app.add_middleware(
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(_: Request, exc: StarletteHTTPException):
+    if exc.status_code >= 500:
+        logger.exception("HTTP exception %s: %s", exc.status_code, exc.detail)
     detail = exc.detail
     if not isinstance(detail, str):
         detail = str(detail)
@@ -49,6 +52,7 @@ async def http_exception_handler(_: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(_: Request, exc: RequestValidationError):
+    logger.warning("Request validation error: %s", exc.errors())
     structured = format_request_validation_errors(exc.errors())
     return BaseController.respond_validation_error("Validation error", structured)
 
@@ -87,7 +91,7 @@ async def app_exception_handler(_: Request, exc: AppException):
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(_: Request, exc: Exception):
-    _ = exc
+    logger.exception("Unhandled server exception: %s", exc)
     return BaseController.respond_internal_error("Unexpected server error")
 
 

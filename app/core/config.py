@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     PROJECT_NAME: str = "Tapafix API"
     API_V1_PREFIX: str = "/api/v1"
+    LOG_DIR: str = "logs"
+    LOG_RETENTION_DAYS: int = 14
 
     GOOGLE_CLIENT_ID: Optional[str] = None
     FACEBOOK_APP_ID: Optional[str] = None
