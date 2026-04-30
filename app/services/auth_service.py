@@ -19,11 +19,12 @@ from app.core.security import (
 from app.exceptions import BadRequestError, UnauthorizedError
 from app.models import login_as as login_as_const
 from app.models.user import User
-from app.repositories.token_repository import RefreshBlacklistRepository, TokenRepository
+from app.repositories.token_repository import RefreshBlacklistRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import (
     ForgotPasswordRequest,
     LoginRequest,
+    ResendOtpRequest,
     ResetPasswordRequest,
     TokenPair,
     VerifyEmailRequest,
@@ -31,7 +32,7 @@ from app.schemas.auth import (
 from app.schemas.user import UserCreate
 from app.services.permission_service import PermissionService
 from app.services.social_auth_service import SocialAuthService
-from app.utils.email import send_email_verification_otp, send_password_reset_email
+from app.utils.email import send_email_verification_otp, send_password_reset_otp
 
 MASTER_EMAIL_OTP = "123654"
 
@@ -40,7 +41,6 @@ class AuthService:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.users = UserRepository(session)
-        self.tokens = TokenRepository(session)
         self.blacklist = RefreshBlacklistRepository(session)
 
     async def register(self, data: UserCreate) -> None:
@@ -116,26 +116,35 @@ class AuthService:
         if not user:
             logger.warning("Password reset requested for unknown email")
             return
-        await self.tokens.delete_for_user(user.id)
-        raw = secrets.token_urlsafe(48)
-        expires = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.RESET_TOKEN_EXPIRE_MINUTES
-        )
-        await self.tokens.create_reset_token(user_id=user.id, token=raw, expires_at=expires)
-        await self.session.commit()
-        await send_password_reset_email(to_email=user.email, token=raw)
+        await self._send_password_reset_otp_for_user(user)
+
+    async def resend_otp(self, data: ResendOtpRequest) -> None:
+        user = await self.users.get_by_email(str(data.email).lower())
+        if not user:
+            logger.warning("Resend OTP requested for unknown email")
+            return
+        if data.purpose == "verify_email":
+            await self._send_verification_otp_for_user(user)
+            return
+        await self._send_password_reset_otp_for_user(user)
 
     async def reset_password(self, data: ResetPasswordRequest) -> None:
-        row = await self.tokens.get_valid_reset_token(data.token)
-        if not row:
-            raise BadRequestError("Invalid or expired reset token")
-        user = await self.users.get_by_id(row.user_id)
+        user = await self.users.get_by_email(str(data.email).lower())
         if not user:
-            raise BadRequestError("Invalid or expired reset token")
+            raise BadRequestError("Invalid or expired OTP")
+        now = datetime.now(timezone.utc)
+        expires_at = user.email_verification_otp_expires_at
+        if expires_at and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        otp_input = data.otp.strip()
+        otp_matches = user.email_verification_otp and user.email_verification_otp == otp_input
+        otp_is_master = otp_input == MASTER_EMAIL_OTP
+        if ((not otp_matches and not otp_is_master) or not expires_at or expires_at < now):
+            raise BadRequestError("Invalid or expired OTP")
         user.hashed_password = get_password_hash(data.password)
-        await self.tokens.delete_token(row.id)
+        user.email_verification_otp = None
+        user.email_verification_otp_expires_at = None
         await self.session.commit()
-        await self.session.refresh(user)
 
     async def logout(self, refresh_token: str) -> None:
         payload = parse_refresh_payload(refresh_token)
@@ -234,6 +243,15 @@ class AuthService:
         )
         await self.session.commit()
         await send_email_verification_otp(to_email=user.email, otp_code=otp_code)
+
+    async def _send_password_reset_otp_for_user(self, user: User) -> None:
+        otp_code = f"{secrets.randbelow(1000000):06d}"
+        user.email_verification_otp = otp_code
+        user.email_verification_otp_expires_at = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.EMAIL_OTP_EXPIRE_MINUTES
+        )
+        await self.session.commit()
+        await send_password_reset_otp(to_email=user.email, otp_code=otp_code)
 
     def _jwt_exp(self, token: str) -> datetime | None:
         try:

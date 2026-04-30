@@ -9,6 +9,7 @@ from app.schemas.auth import (
     LoginRequest,
     LogoutRequest,
     RefreshRequest,
+    ResendOtpRequest,
     ResetPasswordRequest,
     SocialLoginRequest,
     VerifyEmailRequest,
@@ -48,6 +49,14 @@ async def forgot_password(
     controller: Annotated[AuthController, Depends(get_auth_controller)],
 ):
     return await controller.forgot_password(payload)
+
+
+@router.post("/resend-otp")
+async def resend_otp(
+    payload: ResendOtpRequest,
+    controller: Annotated[AuthController, Depends(get_auth_controller)],
+):
+    return await controller.resend_otp(payload)
 
 
 @router.post("/reset-password")

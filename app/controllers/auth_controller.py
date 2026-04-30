@@ -6,6 +6,7 @@ from app.schemas.auth import (
     LoginRequest,
     LogoutRequest,
     RefreshRequest,
+    ResendOtpRequest,
     ResetPasswordRequest,
     SocialLoginRequest,
     VerifyEmailRequest,
@@ -34,8 +35,12 @@ class AuthController(BaseController):
         await self._service.forgot_password(payload)
         return self.respond_success(
             None,
-            "If the email exists, reset instructions have been sent.",
+            "If the email exists, OTP has been sent.",
         )
+
+    async def resend_otp(self, payload: ResendOtpRequest) -> JSONResponse:
+        await self._service.resend_otp(payload)
+        return self.respond_success(None, "OTP resent successfully")
 
     async def reset_password(self, payload: ResetPasswordRequest) -> JSONResponse:
         await self._service.reset_password(payload)

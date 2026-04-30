@@ -10,9 +10,8 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(user_router, prefix="/user", tags=["user"])
 api_router.include_router(provider_router, prefix="/provider", tags=["provider"])
-api_router.include_router(
-    providers_public.router, prefix="/providers", tags=["providers"]
-)
+api_router.include_router(providers_public.router, prefix="/providers", tags=["providers"])
 api_router.include_router(admin_router, prefix="/admin", tags=["admin"])
 api_router.include_router(future.router)
 api_router.include_router(payments.router)
+

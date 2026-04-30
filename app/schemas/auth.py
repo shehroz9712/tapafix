@@ -29,7 +29,8 @@ class ForgotPasswordRequest(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    token: str = Field(..., min_length=10, max_length=256)
+    email: EmailStr
+    otp: str = Field(..., min_length=4, max_length=8)
     password: str = Field(..., min_length=8, max_length=128)
 
 
@@ -45,3 +46,8 @@ class SocialLoginRequest(BaseModel):
 class VerifyEmailRequest(BaseModel):
     email: EmailStr
     otp: str = Field(..., min_length=4, max_length=8)
+
+
+class ResendOtpRequest(BaseModel):
+    email: EmailStr
+    purpose: Literal["verify_email", "forgot_password"]
