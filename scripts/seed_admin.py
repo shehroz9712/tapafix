@@ -7,6 +7,7 @@ from app.core.security import get_password_hash
 from app.db.session import AsyncSessionLocal
 from app.models.role import Role
 from app.models.user import User
+from app.utils.user_name import display_name_from_parts, split_display_name
 
 
 async def seed_admin() -> None:
@@ -28,20 +29,29 @@ async def seed_admin() -> None:
 
         user_result = await session.execute(select(User).where(User.email == email))
         existing = user_result.scalar_one_or_none()
+        fn, ln = split_display_name(name)
+        display = display_name_from_parts(fn, ln)
         if existing:
             existing.login_as = "admin"
             existing.role_id = admin_role.id
             existing.is_active = True
-            if existing.name != name:
-                existing.name = name
+            if existing.name != display:
+                existing.first_name = fn
+                existing.last_name = ln
+                existing.name = display
             if not existing.hashed_password:
                 existing.hashed_password = get_password_hash(password)
         else:
             session.add(
                 User(
-                    name=name,
+                    first_name=fn,
+                    last_name=ln,
+                    name=display,
                     email=email,
                     phone=None,
+                    country=None,
+                    latitude=None,
+                    longitude=None,
                     hashed_password=get_password_hash(password),
                     provider="email",
                     provider_id=None,

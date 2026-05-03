@@ -56,5 +56,10 @@ class Settings(BaseSettings):
     STRIPE_SUCCESS_URL: str = "http://localhost:3000/payment/success"
     STRIPE_CANCEL_URL: str = "http://localhost:3000/payment/cancel"
 
+    # Local chat media (saved under UPLOAD_BASE_DIR/chat)
+    UPLOAD_BASE_DIR: str = "uploads"
+    PUBLIC_MEDIA_URL_PREFIX: str = "/media"
+    CHAT_UPLOAD_MAX_BYTES: int = 20 * 1024 * 1024
+
 
 settings = Settings()

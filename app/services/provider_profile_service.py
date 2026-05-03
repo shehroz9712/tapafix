@@ -147,6 +147,11 @@ class ProviderProfileService:
         longitude: float,
         category_id: int | None,
         subcategory_id: int | None,
+        min_rating: float | None = None,
+        min_rating_count: int | None = None,
+        pricing_type: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
         skip: int,
         limit: int,
     ) -> list[tuple[ProviderProfile, User, float]]:
@@ -155,9 +160,50 @@ class ProviderProfileService:
             search_lon=longitude,
             category_id=category_id,
             subcategory_id=subcategory_id,
+            min_rating=min_rating,
+            min_rating_count=min_rating_count,
+            pricing_type=pricing_type,
+            min_price=min_price,
+            max_price=max_price,
             max_rows=self._SCAN_CAP,
         )
         visible: list[tuple[ProviderProfile, User, float]] = []
+        for profile, user, dkm in candidates:
+            if not is_listing_complete_for_public(profile):
+                continue
+            if not is_within_availability(profile.available_days):
+                continue
+            visible.append((profile, user, dkm))
+        return visible[skip : skip + limit]
+
+    async def search_top_rated(
+        self,
+        *,
+        latitude: float | None,
+        longitude: float | None,
+        category_id: int | None,
+        subcategory_id: int | None,
+        min_rating: float | None = None,
+        min_rating_count: int | None = None,
+        pricing_type: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        skip: int,
+        limit: int,
+    ) -> list[tuple[ProviderProfile, User, float | None]]:
+        candidates = await self.profiles.search_top_rated_candidates(
+            search_lat=latitude,
+            search_lon=longitude,
+            category_id=category_id,
+            subcategory_id=subcategory_id,
+            min_rating=min_rating,
+            min_rating_count=min_rating_count,
+            pricing_type=pricing_type,
+            min_price=min_price,
+            max_price=max_price,
+            max_rows=self._SCAN_CAP,
+        )
+        visible: list[tuple[ProviderProfile, User, float | None]] = []
         for profile, user, dkm in candidates:
             if not is_listing_complete_for_public(profile):
                 continue

@@ -62,4 +62,9 @@ class ProviderProfile(Base, TimestampMixin):
         Boolean, nullable=False, default=False, index=True
     )
 
+    average_rating: Mapped[float] = mapped_column(
+        Numeric(3, 2), nullable=False, default=0, server_default="0.00"
+    )
+    rating_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+
     user: Mapped["User"] = relationship("User", back_populates="provider_profile")

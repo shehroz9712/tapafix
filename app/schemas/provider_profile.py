@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from decimal import Decimal
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
 
@@ -157,6 +157,8 @@ class ProviderProfileOut(BaseModel):
     name: str
     email: str
     phone: str | None
+    average_rating: float = 0.0
+    rating_count: int = 0
     is_listing_verified: bool
     otp_verified: bool = False
     category_ids: list[int]
@@ -189,6 +191,8 @@ class ProviderProfileOut(BaseModel):
             name=user.name,
             email=user.email,
             phone=user.phone,
+            average_rating=float(profile.average_rating or 0),
+            rating_count=int(profile.rating_count or 0),
             is_listing_verified=bool(profile.is_listing_verified),
             otp_verified=otp_verified,
             category_ids=profile.category_ids or [],
@@ -229,13 +233,77 @@ class ProviderProfileOut(BaseModel):
 
 
 class ProviderSearchItem(ProviderProfileOut):
-    distance_km: float
+    distance_km: float | None = None
 
 
-class ProviderSearchQuery(BaseModel):
+ProviderPricingType = Literal["per_job", "per_hour"]
+
+
+class ProviderListingFilters(BaseModel):
+    """Optional filters for provider discovery (search + top-rated)."""
+
+    min_rating: float | None = Field(
+        None,
+        ge=0,
+        le=5,
+        description="Minimum average rating (inclusive).",
+    )
+    min_rating_count: int | None = Field(
+        None,
+        ge=0,
+        description="Minimum number of ratings (reviews).",
+    )
+    pricing_type: ProviderPricingType | None = Field(
+        None,
+        description=(
+            "Service pricing model: per fixed job or per hour. "
+            "When set, min_price/max_price apply only to that field. "
+            "category_id / subcategory_id still filter by taxonomy."
+        ),
+    )
+    min_price: float | None = Field(
+        None,
+        ge=0,
+        description="Minimum price (currency unit of listing).",
+    )
+    max_price: float | None = Field(
+        None,
+        ge=0,
+        description="Maximum price (currency unit of listing).",
+    )
+
+    @model_validator(mode="after")
+    def price_range_order(self) -> ProviderListingFilters:
+        if (
+            self.min_price is not None
+            and self.max_price is not None
+            and self.min_price > self.max_price
+        ):
+            raise ValueError("min_price cannot exceed max_price")
+        return self
+
+
+class ProviderSearchQuery(ProviderListingFilters):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     category_id: int | None = Field(None, ge=1)
     subcategory_id: int | None = Field(None, ge=1)
     skip: int = Field(0, ge=0)
     limit: int = Field(20, ge=1, le=100)
+
+
+class WorkerTopRatedQuery(ProviderListingFilters):
+    """Top-rated workers: optional geo filters to same point as public provider search."""
+
+    latitude: float | None = Field(None, ge=-90, le=90)
+    longitude: float | None = Field(None, ge=-180, le=180)
+    category_id: int | None = Field(None, ge=1)
+    subcategory_id: int | None = Field(None, ge=1)
+    skip: int = Field(0, ge=0)
+    limit: int = Field(20, ge=1, le=100)
+
+    @model_validator(mode="after")
+    def latitude_longitude_pair(self) -> WorkerTopRatedQuery:
+        if (self.latitude is None) ^ (self.longitude is None):
+            raise ValueError("latitude and longitude must both be set or both omitted")
+        return self

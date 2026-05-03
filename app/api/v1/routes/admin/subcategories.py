@@ -4,17 +4,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from app.api.v1.deps.auth import RequirePermission, require_admin
+from app.api.v1.deps.auth import RequirePermission
 from app.api.v1.deps.controllers import get_subcategory_controller
 from app.controllers.subcategory_controller import SubCategoryController
 from app.schemas.category import SortOrder, SubCategoryCreate, SubCategoryUpdate
 
-router = APIRouter(
-    dependencies=[require_admin(), RequirePermission("manage_subcategories")],
-)
+router = APIRouter(prefix="/subcategories", tags=["Admin Subcategories"])
 
 
-@router.post("/subcategories")
+@router.post("", dependencies=[RequirePermission("manage_subcategories")])
 async def create_subcategory(
     payload: SubCategoryCreate,
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],
@@ -22,7 +20,7 @@ async def create_subcategory(
     return await controller.create(payload)
 
 
-@router.get("/subcategories")
+@router.get("", dependencies=[RequirePermission("manage_subcategories")])
 async def list_subcategories(
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],
     limit: int = Query(20, ge=1, le=200),
@@ -38,7 +36,10 @@ async def list_subcategories(
     )
 
 
-@router.get("/subcategories/{subcategory_id}")
+@router.get(
+    "/{subcategory_id}",
+    dependencies=[RequirePermission("manage_subcategories")],
+)
 async def get_subcategory(
     subcategory_id: int,
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],
@@ -46,7 +47,10 @@ async def get_subcategory(
     return await controller.get_by_id(subcategory_id)
 
 
-@router.put("/subcategories/{subcategory_id}")
+@router.put(
+    "/{subcategory_id}",
+    dependencies=[RequirePermission("manage_subcategories")],
+)
 async def update_subcategory(
     subcategory_id: int,
     payload: SubCategoryUpdate,
@@ -55,7 +59,10 @@ async def update_subcategory(
     return await controller.update(subcategory_id, payload)
 
 
-@router.delete("/subcategories/{subcategory_id}")
+@router.delete(
+    "/{subcategory_id}",
+    dependencies=[RequirePermission("manage_subcategories")],
+)
 async def delete_subcategory(
     subcategory_id: int,
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],

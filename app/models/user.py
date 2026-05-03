@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -21,9 +21,15 @@ class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Unique on email (ix_users_email, migration 20260504); case-insensitive also via ix_users_email_lower.
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     phone: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    country: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    latitude: Mapped[Optional[float]] = mapped_column(Numeric(10, 7), nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Numeric(10, 7), nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     provider: Mapped[str] = mapped_column(
         String(32), nullable=False, default="email", index=True

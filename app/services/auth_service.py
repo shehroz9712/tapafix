@@ -33,6 +33,7 @@ from app.schemas.user import UserCreate
 from app.services.permission_service import PermissionService
 from app.services.social_auth_service import SocialAuthService
 from app.utils.email import send_email_verification_otp, send_password_reset_otp
+from app.utils.user_name import display_name_from_parts, split_display_name
 
 MASTER_EMAIL_OTP = "123654"
 
@@ -196,9 +197,13 @@ class AuthService:
             return await self._issue_tokens(reloaded)
 
         rnd = get_password_hash(secrets.token_urlsafe(48))
+        fn, ln = split_display_name(profile.name or "User")
+        display = display_name_from_parts(fn, ln)
         try:
             user = await self.users.create_social_user(
-                name=profile.name,
+                first_name=fn,
+                last_name=ln,
+                name=display,
                 email=effective_email,
                 hashed_password=rnd,
                 provider=profile.provider,

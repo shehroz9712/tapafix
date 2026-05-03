@@ -11,6 +11,7 @@ from app.schemas.provider_profile import (
     ProviderProfilePatch,
     ProviderSearchItem,
     ProviderSearchQuery,
+    WorkerTopRatedQuery,
 )
 from app.services.provider_profile_service import ProviderProfileService
 
@@ -48,6 +49,11 @@ class ProviderProfileController(BaseController):
             longitude=query.longitude,
             category_id=query.category_id,
             subcategory_id=query.subcategory_id,
+            min_rating=query.min_rating,
+            min_rating_count=query.min_rating_count,
+            pricing_type=query.pricing_type,
+            min_price=query.min_price,
+            max_price=query.max_price,
             skip=query.skip,
             limit=query.limit,
         )
@@ -61,6 +67,31 @@ class ProviderProfileController(BaseController):
             for p, u, dkm in rows
         ]
         return self.respond_success({"items": items, "count": len(items)}, "Providers")
+
+    async def search_top_rated(self, query: WorkerTopRatedQuery) -> JSONResponse:
+        rows = await self._service.search_top_rated(
+            latitude=query.latitude,
+            longitude=query.longitude,
+            category_id=query.category_id,
+            subcategory_id=query.subcategory_id,
+            min_rating=query.min_rating,
+            min_rating_count=query.min_rating_count,
+            pricing_type=query.pricing_type,
+            min_price=query.min_price,
+            max_price=query.max_price,
+            skip=query.skip,
+            limit=query.limit,
+        )
+        items = [
+            ProviderSearchItem(
+                **ProviderProfileOut.from_profile_and_user(p, u).model_dump(
+                    exclude={"cnic_front", "cnic_back"}
+                ),
+                distance_km=dkm,
+            ).model_dump()
+            for p, u, dkm in rows
+        ]
+        return self.respond_success({"items": items, "count": len(items)}, "Top-rated workers")
 
     async def admin_set_listing_verified(
         self,

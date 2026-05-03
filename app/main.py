@@ -110,6 +110,14 @@ async def root():
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
+_upload_root = Path(__file__).resolve().parent.parent / settings.UPLOAD_BASE_DIR
+_upload_root.mkdir(parents=True, exist_ok=True)
+app.mount(
+    settings.PUBLIC_MEDIA_URL_PREFIX,
+    StaticFiles(directory=str(_upload_root)),
+    name="uploads",
+)
+
 _web_dir = Path(__file__).resolve().parent.parent / "web"
 if _web_dir.is_dir():
     app.mount(

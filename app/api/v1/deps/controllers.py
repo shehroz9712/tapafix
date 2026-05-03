@@ -8,20 +8,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.deps.db import get_db
 from app.controllers.admin_controller import AdminController
 from app.controllers.auth_controller import AuthController
+from app.controllers.booking_controller import BookingController
+from app.controllers.chat_controller import ChatController
 from app.controllers.category_controller import CategoryController
 from app.controllers.future_modules_controller import FutureModulesController
 from app.controllers.package_controller import PackageController
 from app.controllers.role_controller import RoleController
 from app.controllers.subcategory_controller import SubCategoryController
 from app.controllers.provider_profile_controller import ProviderProfileController
+from app.controllers.service_controller import ServiceController
 from app.controllers.user_controller import UserController
 from app.controllers.vendor_controller import VendorController
 from app.services.auth_service import AuthService
+from app.services.booking_service import BookingService
+from app.services.chat_service import ChatService
 from app.services.category_service import CategoryService
 from app.services.future_modules_service import FutureModulesService
 from app.services.package_service import PackageService
 from app.services.provider_profile_service import ProviderProfileService
 from app.services.role_service import RoleService
+from app.services.service_service import ServiceService
 from app.services.subcategory_service import SubCategoryService
 from app.services.user_service import UserService
 from app.services.vendor_service import VendorService
@@ -125,6 +131,42 @@ def get_package_controller(
     service: Annotated[PackageService, Depends(get_package_service)],
 ) -> PackageController:
     return PackageController(service)
+
+
+def get_booking_service(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> BookingService:
+    return BookingService(session)
+
+
+def get_booking_controller(
+    service: Annotated[BookingService, Depends(get_booking_service)],
+) -> BookingController:
+    return BookingController(service)
+
+
+def get_chat_service(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> ChatService:
+    return ChatService(session)
+
+
+def get_chat_controller(
+    service: Annotated[ChatService, Depends(get_chat_service)],
+) -> ChatController:
+    return ChatController(service)
+
+
+def get_service_service(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> ServiceService:
+    return ServiceService(session)
+
+
+def get_service_controller(
+    service: Annotated[ServiceService, Depends(get_service_service)],
+) -> ServiceController:
+    return ServiceController(service)
 
 
 def get_future_modules_service() -> FutureModulesService:

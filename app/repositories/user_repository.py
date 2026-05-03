@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload
 from app.models import login_as as login_as_const
 from app.models.user import User
 from app.repositories.base import BaseRepository
+from app.utils.user_name import display_name_from_parts, split_display_name
 
 
 class UserRepository(BaseRepository[User]):
@@ -44,9 +45,14 @@ class UserRepository(BaseRepository[User]):
     async def create_user(
         self,
         *,
+        first_name: str,
+        last_name: str,
         name: str,
         email: str,
         phone: str | None,
+        country: str | None,
+        latitude: float | None,
+        longitude: float | None,
         hashed_password: str,
         login_as: str = login_as_const.USER,
         role_id: int | None = None,
@@ -57,9 +63,14 @@ class UserRepository(BaseRepository[User]):
     ) -> User:
         return await self.create(
             obj_in={
+                "first_name": first_name,
+                "last_name": last_name,
                 "name": name,
                 "email": email,
                 "phone": phone,
+                "country": country,
+                "latitude": latitude,
+                "longitude": longitude,
                 "hashed_password": hashed_password,
                 "login_as": login_as,
                 "role_id": role_id,
@@ -74,6 +85,8 @@ class UserRepository(BaseRepository[User]):
     async def create_social_user(
         self,
         *,
+        first_name: str,
+        last_name: str,
         name: str,
         email: str,
         hashed_password: str,
@@ -84,9 +97,14 @@ class UserRepository(BaseRepository[User]):
         login_as: str = login_as_const.USER,
     ) -> User:
         return await self.create_user(
+            first_name=first_name,
+            last_name=last_name,
             name=name,
             email=email,
             phone=None,
+            country=None,
+            latitude=None,
+            longitude=None,
             hashed_password=hashed_password,
             login_as=login_as,
             role_id=None,
@@ -115,7 +133,10 @@ class UserRepository(BaseRepository[User]):
         if avatar_url:
             user.avatar_url = avatar_url
         if name:
-            user.name = name[:200]
+            fn, ln = split_display_name(name)
+            user.first_name = fn
+            user.last_name = ln
+            user.name = display_name_from_parts(fn, ln)
         if email:
             el = email.strip().lower()
             if user.email.lower() != el:

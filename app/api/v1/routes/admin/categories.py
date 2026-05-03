@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from app.api.v1.deps.auth import RequirePermission, require_admin
+from app.api.v1.deps.auth import RequirePermission
 from app.api.v1.deps.controllers import (
     get_category_controller,
     get_subcategory_controller,
@@ -13,12 +13,10 @@ from app.controllers.category_controller import CategoryController
 from app.controllers.subcategory_controller import SubCategoryController
 from app.schemas.category import CategoryCreate, CategoryUpdate, SortOrder
 
-router = APIRouter(
-    dependencies=[require_admin(), RequirePermission("manage_categories")],
-)
+router = APIRouter(prefix="/categories", tags=["Admin Categories"])
 
 
-@router.post("/categories")
+@router.post("", dependencies=[RequirePermission("manage_categories")])
 async def create_category(
     payload: CategoryCreate,
     controller: Annotated[CategoryController, Depends(get_category_controller)],
@@ -26,7 +24,7 @@ async def create_category(
     return await controller.create(payload)
 
 
-@router.get("/categories")
+@router.get("", dependencies=[RequirePermission("manage_categories")])
 async def list_categories(
     controller: Annotated[CategoryController, Depends(get_category_controller)],
     limit: int = Query(20, ge=1, le=200),
@@ -44,7 +42,10 @@ async def list_categories(
     )
 
 
-@router.get("/categories/{category_id}")
+@router.get(
+    "/{category_id}",
+    dependencies=[RequirePermission("manage_categories")],
+)
 async def get_category(
     category_id: int,
     controller: Annotated[CategoryController, Depends(get_category_controller)],
@@ -53,7 +54,10 @@ async def get_category(
     return await controller.get_by_id(category_id, include_subcategories=include_subcategories)
 
 
-@router.put("/categories/{category_id}")
+@router.put(
+    "/{category_id}",
+    dependencies=[RequirePermission("manage_categories")],
+)
 async def update_category(
     category_id: int,
     payload: CategoryUpdate,
@@ -62,7 +66,10 @@ async def update_category(
     return await controller.update(category_id, payload)
 
 
-@router.delete("/categories/{category_id}")
+@router.delete(
+    "/{category_id}",
+    dependencies=[RequirePermission("manage_categories")],
+)
 async def delete_category(
     category_id: int,
     controller: Annotated[CategoryController, Depends(get_category_controller)],
@@ -70,7 +77,10 @@ async def delete_category(
     return await controller.delete(category_id)
 
 
-@router.get("/categories/{category_id}/subcategories")
+@router.get(
+    "/{category_id}/subcategories",
+    dependencies=[RequirePermission("manage_subcategories")],
+)
 async def get_subcategories_by_category(
     category_id: int,
     controller: Annotated[SubCategoryController, Depends(get_subcategory_controller)],
